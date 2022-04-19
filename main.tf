@@ -1,40 +1,43 @@
+locals {
+  point_to_lb     = var.container_port > 0 && var.alb_arn != "" ? 1 : 0
+  fargate_version = "1.4.0"
+}
+
 # ----------------- DATA ------------------------------
 
 data "aws_lb" "lb" {
+  count = local.point_to_lb
   arn = var.alb_arn
-}
-
-# ----------------- ECS Logs ---------------------------
-
-
-resource "aws_cloudwatch_log_group" "service_log_group" {
-  name = "/ecs/${var.EnvironmentName}/${var.service}"
 }
 
 # ----------------- ALB TARGET GROUP ------------------------------
 
 resource "aws_lb_target_group" "lb_tg" {
+  count = local.point_to_lb
+  lifecycle {
+    create_before_destroy = true
+  }
+
   name        = "${var.cluster}-${var.service}-${var.EnvironmentName}"
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = var.vpc_id
 
-  lifecycle {
-    create_before_destroy = true
-  }
+
 
   health_check {
     interval            = var.health_check_interval
     path                = var.health_check_path
     protocol            = "HTTP"
-    timeout             = 10
-    matcher             = "200,202"
+    matcher             = var.health_check_matcher
     healthy_threshold   = 3
     unhealthy_threshold = 2
+    timeout             = 10
   }
   tags = {
-    Environment = "${var.EnvironmentName}-${var.service}"
+    Environment = var.EnvironmentName
+    Service     = var.service
   }
 }
 
@@ -42,7 +45,7 @@ resource "aws_lb_target_group" "lb_tg" {
 # ----------------- ALB RULES ------------------------------
 
 resource "aws_lb_listener_rule" "https" {
-  count = var.https_listener ? 1 : 0
+  count = local.point_to_lb
 
   listener_arn = var.listener_arn_https
 
@@ -52,34 +55,7 @@ resource "aws_lb_listener_rule" "https" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.lb_tg.arn
-  }
-
-  condition {
-    path_pattern {
-      values = var.path_pattern
-    }
-  }
-
-  condition {
-    host_header {
-      values = [var.subdomain]
-    }
-  }
-}
-
-resource "aws_lb_listener_rule" "http" {
-  count = var.https_listener ? 0 : 1
-
-  listener_arn = var.listener_arn_http
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.lb_tg.arn
+    target_group_arn = aws_lb_target_group.lb_tg[0].arn
   }
 
   condition {
@@ -100,56 +76,57 @@ resource "aws_lb_listener_rule" "http" {
 
 resource "aws_ecs_service" "ecs_service" {
 
-  depends_on = [
-    aws_cloudwatch_log_group.service_log_group,
-    aws_ecs_task_definition.ecs_task_definition
-  ]
   lifecycle {
     ignore_changes = [desired_count]
   }
 
   name                               = var.service
   cluster                            = var.cluster
-  task_definition                    = join("", aws_ecs_task_definition.ecs_task_definition.*.arn)
-  desired_count                      = var.scale_min_capacity
+  task_definition                    = var.task_definition_arn
+  desired_count                      = var.desired_count
   launch_type                        = "FARGATE"
-  platform_version                   = "1.4.0"
+  platform_version                   = local.fargate_version
   force_new_deployment               = var.force_new_deployment
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
-  health_check_grace_period_seconds  = sum([var.health_check_interval, 10])
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.lb_tg.arn
-    container_name   = var.service
-    container_port   = var.container_port
-  }
+  health_check_grace_period_seconds  =  0 # sum([var.health_check_interval, 10])
 
   network_configuration {
-    subnets          = var.ecs_subnets
-    security_groups  = var.security_groups
-    assign_public_ip = var.assign_public_ip
+      subnets          = var.ecs_subnets
+      security_groups  = var.security_groups
+      assign_public_ip = var.assign_public_ip
   }
+
+  dynamic "load_balancer" {
+    for_each = toset(local.point_to_lb == true ? ["0"] : [])
+
+    content {
+      target_group_arn = aws_lb_target_group.lb_tg[0].arn
+      container_name   = var.service
+      container_port   = var.container_port
+    }
+  }
+
 }
 
 # ----------------- DOMAIN ------------------------------
 
 data "aws_route53_zone" "web" {
-  name         = var.root_domain
-  private_zone = false
+  count = var.root_domain != "" ? 1 : 0
+  name  = var.root_domain
 }
 
 resource "aws_route53_record" "web" {
-  count      = var.create_subdomain ? 1 : 0
+  count      = var.subdomain != "" ? 1 : 0
   depends_on = [aws_ecs_service.ecs_service]
 
-  zone_id = data.aws_route53_zone.web.id
+  zone_id = data.aws_route53_zone.web[0].id
   name    = var.subdomain
   type    = "A"
 
   alias {
-    name                   = data.aws_lb.lb.dns_name
-    zone_id                = data.aws_lb.lb.zone_id
+    name                   = data.aws_lb.lb[0].dns_name
+    zone_id                = data.aws_lb.lb[0].zone_id
     evaluate_target_health = true
   }
 }
@@ -161,7 +138,7 @@ resource "aws_route53_record" "web" {
 # cpu base scale
 
 resource "aws_appautoscaling_target" "cpu_scale_up" {
-  count      = var.is_cpu_scale ? 1 : 0
+  count      = var.cpu_scale_target > 0 ? 1 : 0
   depends_on = [aws_ecs_service.ecs_service]
 
   min_capacity       = var.scale_min_capacity
@@ -172,7 +149,7 @@ resource "aws_appautoscaling_target" "cpu_scale_up" {
 }
 
 resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
-  count      = var.is_cpu_scale ? 1 : 0
+  count      = var.cpu_scale_target > 0 ? 1 : 0
   depends_on = [aws_appautoscaling_target.cpu_scale_up]
 
   name               = "ECSServiceAverageCPUUtilization:${aws_appautoscaling_target.cpu_scale_up[count.index].resource_id}"
@@ -187,7 +164,7 @@ resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    target_value       = var.cpu_target_value
+    target_value       = var.cpu_scale_target
     scale_in_cooldown  = var.scale_in_cooldown
     scale_out_cooldown = var.scale_out_cooldown
   }
@@ -196,7 +173,7 @@ resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
 # memory base scale
 
 resource "aws_appautoscaling_target" "memory_scale_up" {
-  count      = var.is_memory_scale ? 1 : 0
+  count      = var.memory_scale_target > 0 ? 1 : 0
   depends_on = [aws_ecs_service.ecs_service]
 
   min_capacity       = var.scale_min_capacity
@@ -207,7 +184,7 @@ resource "aws_appautoscaling_target" "memory_scale_up" {
 }
 
 resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
-  count      = var.is_memory_scale ? 1 : 0
+  count      = var.memory_scale_target > 0 ? 1 : 0
   depends_on = [aws_appautoscaling_target.memory_scale_up]
 
   name               = "ECSServiceAverageMemoryUtilization:${aws_appautoscaling_target.memory_scale_up[count.index].resource_id}"
@@ -222,7 +199,7 @@ resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
       predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
 
-    target_value       = var.memory_target_value
+    target_value       = var.memory_scale_target
     scale_in_cooldown  = var.scale_in_cooldown
     scale_out_cooldown = var.scale_out_cooldown
   }
@@ -258,4 +235,3 @@ resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
 #     scale_out_cooldown = var.scale_out_cooldown
 #   }
 # }
-

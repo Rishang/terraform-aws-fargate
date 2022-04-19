@@ -1,0 +1,26 @@
+formatter: "markdown"
+
+content: |-
+  # terraform module for aws ecs fargate
+
+  {{ .Providers }}
+
+  {{ .Outputs }}
+
+  {{ .Inputs }}
+
+  ## Example tfvar
+
+  ```hcl
+  {{ include "vars/example.tfvars" }}
+  ```
+
+  ---
+  README.md created by: `terraform-docs`
+
+output:
+  file: "./README.md"
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
