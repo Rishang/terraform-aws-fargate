@@ -9,7 +9,7 @@ content: |-
 
   {{ .Inputs }}
 
-  ## Example tfvar
+  ## tfvar inputs
 
   ```hcl
   {{ include "vars/example.tfvars" }}

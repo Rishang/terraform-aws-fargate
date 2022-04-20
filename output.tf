@@ -1,28 +1,29 @@
 output "cluster_name" {
-  value = aws_ecs_service.ecs_service.cluster
+  description = "ecs fargate application cluster name."
+  value       = aws_ecs_service.ecs_service.cluster
 }
+
 output "service_name" {
-  description = "Output ecs service details."
+  description = "ecs fargate application service name."
   value       = aws_ecs_service.ecs_service.name
 }
 
 output "service_id" {
-  description = "Output ecs service details."
+  description = "ecs fargate application service id."
   value       = aws_ecs_service.ecs_service.id
 }
 
-# output "ecs_task_defination_arn" {
-#   value = aws_ecs_service.ecs_service.task_definition
-# }
-
 output "service_domain_name" {
-  value = join("", aws_route53_record.web[*].name)
+  description = "application service domain name. (if provided)"
+  value       = join("", aws_route53_record.web[*].name)
 }
 
 output "service_domain_id" {
-  value = join("", aws_route53_record.web[*].id)
+  description = "application route53 endpoint id. (if provided)"
+  value       = join("", aws_route53_record.web[*].id)
 }
 
 output "service_domain_type" {
-  value = join("", aws_route53_record.web[*].type)
+  description = "application route53 endpoint domain type eg. [A, CNAME]. (if provided)"
+  value       = join("", aws_route53_record.web[*].type)
 }

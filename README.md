@@ -11,12 +11,12 @@
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | n/a |
-| <a name="output_service_domain_id"></a> [service\_domain\_id](#output\_service\_domain\_id) | n/a |
-| <a name="output_service_domain_name"></a> [service\_domain\_name](#output\_service\_domain\_name) | n/a |
-| <a name="output_service_domain_type"></a> [service\_domain\_type](#output\_service\_domain\_type) | n/a |
-| <a name="output_service_id"></a> [service\_id](#output\_service\_id) | Output ecs service details. |
-| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | Output ecs service details. |
+| <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | ecs fargate application cluster name. |
+| <a name="output_service_domain_id"></a> [service\_domain\_id](#output\_service\_domain\_id) | application route53 endpoint id. (if provided) |
+| <a name="output_service_domain_name"></a> [service\_domain\_name](#output\_service\_domain\_name) | application service domain name. (if provided) |
+| <a name="output_service_domain_type"></a> [service\_domain\_type](#output\_service\_domain\_type) | application route53 endpoint domain type eg. [A, CNAME]. (if provided) |
+| <a name="output_service_id"></a> [service\_id](#output\_service\_id) | ecs fargate application service id. |
+| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | ecs fargate application service name. |
 
 ## Inputs
 
@@ -47,10 +47,11 @@
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | Extra security groups to attach to ecs service | `list(any)` | `[]` | no |
 | <a name="input_service"></a> [service](#input\_service) | Fargate service name | `any` | n/a | yes |
 | <a name="input_subdomain"></a> [subdomain](#input\_subdomain) | Subdomain name you want to give eg: test.example.com | `string` | `""` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to the resources | `map(any)` | `{}` | no |
 | <a name="input_task_definition_arn"></a> [task\_definition\_arn](#input\_task\_definition\_arn) | The ARN of the task definition to use for the ECS service | `string` | n/a | yes |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | aws vpc id | `string` | `""` | no |
 
-## Example tfvar
+## tfvar inputs
 
 ```hcl
 EnvironmentName                    = null
@@ -78,6 +79,7 @@ scale_out_cooldown                 = 250
 security_groups                    = []
 service                            = null
 subdomain                          = ""
+tags                               = {}
 task_definition_arn                = null
 vpc_id                             = ""
 ```
