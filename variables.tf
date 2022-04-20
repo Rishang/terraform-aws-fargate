@@ -1,8 +1,14 @@
-# ----- EnvironmentName ---------------
+# ----- Environment ---------------
 
 variable "EnvironmentName" {
   type        = string
   description = "The name of the infra environment to deploy to eg. dev, prod, test"
+}
+
+variable "tags" {
+  type        = map(any)
+  description = "Tags to apply to the resources"
+  default     = {}
 }
 
 # ----------------------------  ECS Fargate --------------------------------

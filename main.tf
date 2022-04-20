@@ -1,13 +1,14 @@
 locals {
   point_to_lb     = var.container_port > 0 && var.alb_arn != "" ? 1 : 0
   fargate_version = "1.4.0"
+  launch_type     = "FARGATE"
 }
 
 # ----------------- DATA ------------------------------
 
 data "aws_lb" "lb" {
   count = local.point_to_lb
-  arn = var.alb_arn
+  arn   = var.alb_arn
 }
 
 # ----------------- ALB TARGET GROUP ------------------------------
@@ -84,17 +85,17 @@ resource "aws_ecs_service" "ecs_service" {
   cluster                            = var.cluster
   task_definition                    = var.task_definition_arn
   desired_count                      = var.desired_count
-  launch_type                        = "FARGATE"
+  launch_type                        = local.launch_type
   platform_version                   = local.fargate_version
   force_new_deployment               = var.force_new_deployment
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
-  health_check_grace_period_seconds  =  0 # sum([var.health_check_interval, 10])
+  health_check_grace_period_seconds  = 0 # sum([var.health_check_interval, 10])
 
   network_configuration {
-      subnets          = var.ecs_subnets
-      security_groups  = var.security_groups
-      assign_public_ip = var.assign_public_ip
+    subnets          = var.ecs_subnets
+    security_groups  = var.security_groups
+    assign_public_ip = var.assign_public_ip
   }
 
   dynamic "load_balancer" {
@@ -107,6 +108,12 @@ resource "aws_ecs_service" "ecs_service" {
     }
   }
 
+  tags = merge(
+    var.tags,
+    {
+      Name = var.service
+    }
+  )
 }
 
 # ----------------- DOMAIN ------------------------------
