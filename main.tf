@@ -1,11 +1,11 @@
 locals {
-  point_to_lb     = var.container_port > 0 && var.listener_arn_https != "" ? 1 : 0
-  point_to_r53    = var.subdomain != "false" && var.point_to_r53 == true ? 1 : 0
+  point_to_lb     = var.point_to_lb == true ? 1 : 0
+  point_to_r53    = var.subdomain != "" && var.point_to_r53 == true ? 1 : 0
   fargate_version = "1.4.0"
   launch_type     = "FARGATE"
 
   # convert : demo.example.com to example.com
-  root_domain     = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
+  root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
 }
 
 # ----------------- DATA ------------------------------
@@ -71,7 +71,7 @@ resource "aws_lb_listener_rule" "https" {
 
   condition {
     host_header {
-      values = [var.subdomain == "false" ? "*" : var.subdomain]
+      values = [var.subdomain == "" ? "*" : var.subdomain]
     }
   }
 }

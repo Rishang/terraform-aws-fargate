@@ -104,16 +104,16 @@ variable "scale_out_cooldown" {
 
 # ----------------------- ROUTE 53 ----------------------------------------
 
-variable "subdomain" {
-  type        = string
-  description = "Subdomain name you want to give eg: test.example.com"
-  default     = "false"
-}
-
 variable "point_to_r53" {
   type        = bool
   description = "Enable to point to R53"
   default     = false
+}
+
+variable "subdomain" {
+  type        = string
+  description = "Subdomain name you want to give eg: test.example.com (required if 'point_to_r53' is true)"
+  default     = ""
 }
 
 # -------------------------------- VPC ---------------------------------
@@ -132,9 +132,15 @@ variable "ecs_subnets" {
 
 # ------------------------------- ALB -----------------------------------
 
+variable "point_to_lb" {
+  type        = bool
+  description = "Enable to point to ALB (load balancer)"
+  default     = false
+}
+
 variable "alb_arn" {
   type        = string
-  description = "Application Load Balencer arn"
+  description = "Application Load Balencer arn (required if 'point_to_lb' is true)"
   default     = ""
 }
 
@@ -152,7 +158,7 @@ variable "health_check_interval" {
 
 variable "listener_arn_https" {
   type        = string
-  description = "HTTPS listner arn for Application Load Balencer"
+  description = "HTTPS listner arn for Application Load Balencer (required if 'point_to_lb' is true)"
   default     = ""
 }
 
