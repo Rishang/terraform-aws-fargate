@@ -104,16 +104,10 @@ variable "scale_out_cooldown" {
 
 # ----------------------- ROUTE 53 ----------------------------------------
 
-variable "root_domain" {
-  type        = string
-  description = "Hosted domain name (HostedZone) eg: example.com"
-  default     = ""
-}
-
 variable "subdomain" {
   type        = string
   description = "Subdomain name you want to give eg: test.example.com"
-  default     = ""
+  default     = "false"
 }
 
 variable "point_to_r53" {
