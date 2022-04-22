@@ -1,5 +1,6 @@
 locals {
   point_to_lb     = var.container_port > 0 && var.listener_arn_https != "" ? 1 : 0
+  point_to_r53    = var.root_domain != "" && var.subdomain != "" && var.point_to_r53 == true ? 1 : 0
   fargate_version = "1.4.0"
   launch_type     = "FARGATE"
 }
@@ -119,12 +120,12 @@ resource "aws_ecs_service" "ecs_service" {
 # ----------------- DOMAIN ------------------------------
 
 data "aws_route53_zone" "web" {
-  count = var.root_domain != "" ? 1 : 0
+  count = local.point_to_r53
   name  = var.root_domain
 }
 
 resource "aws_route53_record" "web" {
-  count      = var.subdomain != "" ? 1 : 0
+  count      = local.point_to_r53
   depends_on = [aws_ecs_service.ecs_service]
 
   zone_id = data.aws_route53_zone.web[0].id
