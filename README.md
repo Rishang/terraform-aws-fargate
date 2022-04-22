@@ -12,8 +12,9 @@
 
 module "fargate" {
   source = "github.com/Rishang/terraform-aws-fargate"
+  version = "1.0.0"
 
-  EnvironmentName = local.EnvironmentName
+  EnvironmentName = "test"
 
   # ecs fargate
   cluster             = aws_ecs_cluster.app.name
@@ -44,7 +45,7 @@ module "fargate" {
 
   tags = {
     Name         = "whoami"
-    Version      = "1.0.0"
+    Version      = "latest"
     cluster_name = local.cluster_name
   }
 }
