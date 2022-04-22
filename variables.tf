@@ -45,7 +45,7 @@ variable "desired_count" {
 }
 
 variable "security_groups" {
-  type        = list(any)
+  type        = list(string)
   description = "Extra security groups to attach to ecs service"
   default     = []
 }
@@ -125,9 +125,8 @@ variable "vpc_id" {
 }
 
 variable "ecs_subnets" {
-  type        = list(any)
+  type        = list(string)
   description = "List of subnets for ecs service"
-  default     = []
 }
 
 # ------------------------------- ALB -----------------------------------
@@ -169,7 +168,7 @@ variable "health_check_path" {
 }
 
 variable "path_pattern" {
-  type        = list(any)
+  type        = list(string)
   description = "List of paths for alb to route traffic at ecs target group"
   default     = ["/", "/*"]
 }

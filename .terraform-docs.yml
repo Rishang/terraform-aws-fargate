@@ -7,7 +7,7 @@ sort:
 content: |-
   # aws ecs fargate terraform module
   
-  ### Example
+  ### Usage
 
   {{ include "examples/example.md" }}
 
@@ -15,13 +15,16 @@ content: |-
 
   {{ .Outputs }}
 
-  {{ .Inputs }}
-
   ## tfvar inputs
 
   ```hcl
+  # null are required inputs, 
+  # others are optional default values
+
   {{ include "vars/example.tfvars" }}
   ```
+
+  {{ .Inputs }}
 
   ---
   README.md created by: `terraform-docs`
