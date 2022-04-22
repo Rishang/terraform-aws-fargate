@@ -1,7 +1,7 @@
 formatter: "markdown"
 
 content: |-
-  # terraform module for aws ecs fargate
+  # aws ecs fargate terraform module
   
   ### Example
 

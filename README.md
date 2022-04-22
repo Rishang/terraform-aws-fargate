@@ -1,5 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
-# terraform module for aws ecs fargate
+# aws ecs fargate terraform module
 
 ### Example
 
@@ -28,16 +28,16 @@ module "fargate" {
   ecs_subnets      = ["subnet-a2b3","subnet-c9da","subnet-0b23"]
   security_groups  = ["sg-f34d92"]
 
-  # load balancer
+  # load balancer (optional)
   point_to_lb        = true
   listener_arn_https = aws_lb_listener.https.arn
   alb_arn            = aws_lb.web.arn
   subdomain          = "app.example.com"
 
-  # route53
+  # route53 (optional)
   point_to_r53 = true
 
-  # autoscale
+  # autoscale (optional)
   memory_scale_target = 60
   # cpu_scale_target  = 60
 
