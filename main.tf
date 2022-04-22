@@ -1,5 +1,5 @@
 locals {
-  point_to_lb     = var.container_port > 0 && var.alb_arn != "" ? 1 : 0
+  point_to_lb     = var.container_port > 0 && var.listener_arn_https != "" ? 1 : 0
   fargate_version = "1.4.0"
   launch_type     = "FARGATE"
 }
