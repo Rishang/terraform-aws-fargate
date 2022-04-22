@@ -2,6 +2,10 @@ formatter: "markdown"
 
 content: |-
   # terraform module for aws ecs fargate
+  
+  ### Example
+
+  {{ include "examples/example.md" }}
 
   {{ .Providers }}
 
