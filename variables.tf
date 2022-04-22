@@ -117,9 +117,9 @@ variable "subdomain" {
 }
 
 variable "point_to_r53" {
-  type = bool
+  type        = bool
   description = "Enable to point to R53"
-  default = false
+  default     = false
 }
 
 # -------------------------------- VPC ---------------------------------
