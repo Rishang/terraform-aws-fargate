@@ -179,5 +179,6 @@ variable "path_pattern" {
 
 variable "container_port" {
   type    = number
+  description = "container application port"
   default = -1
 }

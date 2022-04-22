@@ -1,5 +1,9 @@
 formatter: "markdown"
 
+sort:
+  enabled: true
+  by: required
+
 content: |-
   # aws ecs fargate terraform module
   
