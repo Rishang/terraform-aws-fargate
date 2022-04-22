@@ -100,7 +100,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   dynamic "load_balancer" {
-    for_each = toset(local.point_to_lb == true ? ["0"] : [])
+    for_each = toset(local.point_to_lb == 1 ? ["true"] : [])
 
     content {
       target_group_arn = aws_lb_target_group.lb_tg[0].arn
