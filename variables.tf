@@ -137,12 +137,6 @@ variable "point_to_lb" {
   default     = false
 }
 
-variable "alb_arn" {
-  type        = string
-  description = "Application Load Balencer arn (required if 'point_to_lb' is true)"
-  default     = ""
-}
-
 variable "health_check_matcher" {
   type        = string
   description = "Service health check response matcher"

@@ -32,7 +32,6 @@ module "fargate" {
   # load balancer (optional)
   point_to_lb        = true
   listener_arn_https = aws_lb_listener.https.arn
-  alb_arn            = aws_lb.web.arn
   subdomain          = "app.example.com"
 
   # route53 (optional)
@@ -75,7 +74,6 @@ module "fargate" {
 # others are optional default values
 
 EnvironmentName                    = null
-alb_arn                            = ""
 assign_public_ip                   = false
 cluster                            = null
 container_port                     = -1
@@ -114,7 +112,6 @@ vpc_id                             = ""
 | <a name="input_ecs_subnets"></a> [ecs\_subnets](#input\_ecs\_subnets) | List of subnets for ecs service | `list(string)` | n/a | yes |
 | <a name="input_service"></a> [service](#input\_service) | Fargate service name | `any` | n/a | yes |
 | <a name="input_task_definition_arn"></a> [task\_definition\_arn](#input\_task\_definition\_arn) | The ARN of the task definition to use for the ECS service | `string` | n/a | yes |
-| <a name="input_alb_arn"></a> [alb\_arn](#input\_alb\_arn) | Application Load Balencer arn (required if 'point\_to\_lb' is true) | `string` | `""` | no |
 | <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | Auto assign public ip for ecs containers | `bool` | `false` | no |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | container application port | `number` | `-1` | no |
 | <a name="input_cpu_scale_target"></a> [cpu\_scale\_target](#input\_cpu\_scale\_target) | Treshold cpu target value for autoscaling ecs service | `number` | `-1` | no |

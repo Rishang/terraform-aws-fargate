@@ -27,7 +27,6 @@ module "fargate" {
   # load balancer (optional)
   point_to_lb        = true
   listener_arn_https = aws_lb_listener.https.arn
-  alb_arn            = aws_lb.web.arn
   subdomain          = "app.example.com"
 
   # route53 (optional)

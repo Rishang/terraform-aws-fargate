@@ -8,11 +8,16 @@ locals {
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
 }
 
-# ----------------- DATA ------------------------------
+# ------------------------ DATA ------------------------------
+
+data "aws_lb_listener" "https" {
+  count = local.point_to_lb
+  arn   = var.listener_arn_https
+}
 
 data "aws_lb" "lb" {
   count = local.point_to_lb
-  arn   = var.alb_arn
+  arn   = data.aws_lb_listener.https[0].load_balancer_arn
 }
 
 # ----------------- ALB TARGET GROUP ------------------------------
