@@ -26,6 +26,12 @@ variable "service" {
   description = "Fargate service name"
 }
 
+variable "fargate_spot" {
+  type        = bool
+  description = "Whether to use fargate spot instances or not."
+  default     = false
+}
+
 variable "assign_public_ip" {
   type        = bool
   description = "Auto assign public ip for ecs containers"
@@ -36,12 +42,6 @@ variable "force_new_deployment" {
   type        = bool
   description = "Enable to force a new task deployment of the service"
   default     = false
-}
-
-variable "desired_count" {
-  type        = number
-  description = "Desired count of containers"
-  default     = 1
 }
 
 variable "security_groups" {
@@ -65,10 +65,10 @@ variable "deployment_maximum_percent" {
 # ----------------------- Fargate autoscale -------------------------------
 
 
-variable "scale_min_capacity" {
+variable "min_count" {
   type        = number
   description = "Min count of containers"
-  default     = 2
+  default     = 1
 }
 
 variable "scale_max_capacity" {
@@ -171,7 +171,7 @@ variable "path_pattern" {
 # --------------------- OTHERS ---------------------------------------------
 
 variable "container_port" {
-  type    = number
+  type        = number
   description = "container application port"
-  default = -1
+  default     = -1
 }

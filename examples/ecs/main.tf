@@ -83,14 +83,14 @@ module "fargate" {
   source = "../../"
 
   EnvironmentName = local.EnvironmentName
-  
+
   # fargate
   cluster             = aws_ecs_cluster.app.name
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  desired_count       = 1
-  
+  min_count           = 1
+
   # networking
   assign_public_ip = true
   vpc_id           = data.aws_vpc.default.id

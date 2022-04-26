@@ -2,7 +2,6 @@ locals {
   point_to_lb     = var.point_to_lb == true ? 1 : 0
   point_to_r53    = var.subdomain != "" && var.point_to_r53 == true ? 1 : 0
   fargate_version = "1.4.0"
-  launch_type     = "FARGATE"
 
   # convert : demo.example.com to example.com
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
@@ -90,16 +89,22 @@ resource "aws_ecs_service" "ecs_service" {
     ignore_changes = [desired_count]
   }
 
-  name                               = var.service
-  cluster                            = var.cluster
-  task_definition                    = var.task_definition_arn
-  desired_count                      = var.desired_count
-  launch_type                        = local.launch_type
+  name            = var.service
+  cluster         = var.cluster
+  task_definition = var.task_definition_arn
+  desired_count   = var.min_count
+
   platform_version                   = local.fargate_version
   force_new_deployment               = var.force_new_deployment
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
   health_check_grace_period_seconds  = 0 # sum([var.health_check_interval, 10])
+
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = var.fargate_spot == true ? "FARGATE_SPOT" : "FARGATE"
+    weight            = 1
+  }
 
   network_configuration {
     subnets          = var.ecs_subnets
@@ -157,7 +162,7 @@ resource "aws_appautoscaling_target" "cpu_scale_up" {
   count      = var.cpu_scale_target > 0 ? 1 : 0
   depends_on = [aws_ecs_service.ecs_service]
 
-  min_capacity       = var.scale_min_capacity
+  min_capacity       = var.min_count
   max_capacity       = var.scale_max_capacity
   resource_id        = "service/${var.cluster}/${var.service}"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -192,7 +197,7 @@ resource "aws_appautoscaling_target" "memory_scale_up" {
   count      = var.memory_scale_target > 0 ? 1 : 0
   depends_on = [aws_ecs_service.ecs_service]
 
-  min_capacity       = var.scale_min_capacity
+  min_capacity       = var.min_count
   max_capacity       = var.scale_max_capacity
   resource_id        = "service/${var.cluster}/${var.service}"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -224,7 +229,7 @@ resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
 # alb based auto scaling
 
 # resource "aws_appautoscaling_target" "scale_up_policy" {
-#   min_capacity       = var.scale_min_capacity
+#   min_capacity       = var.min_count
 #   max_capacity       = var.scale_max_capacity
 #   resource_id        = "service/${var.cluster}/${var.service}"
 #   scalable_dimension = "ecs:service:DesiredCount"
