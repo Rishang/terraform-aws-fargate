@@ -12,7 +12,7 @@
 
 module "fargate" {
   source = "github.com/Rishang/terraform-aws-fargate"
-  version = "1.0.0"
+  version = "1.1.0"
 
   EnvironmentName = "test"
 
