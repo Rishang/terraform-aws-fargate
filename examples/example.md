@@ -6,7 +6,7 @@
 # ecs service (memory scaling) >> TargetGroup >> Alb HTTPS rule >> Route53 >> app.example.com
 
 module "fargate" {
-  source = "github.com/Rishang/terraform-aws-fargate"
+  source = "Rishang/fargate/aws"
   version = "1.1.0"
 
   EnvironmentName = "test"
