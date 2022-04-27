@@ -21,7 +21,7 @@ module "fargate" {
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  min_count           = 1
+  min_count           = 3
   fargate_spot        = true
 
   # networking
