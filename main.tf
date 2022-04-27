@@ -1,6 +1,6 @@
 locals {
   point_to_lb     = var.point_to_lb == true ? 1 : 0
-  point_to_r53    = var.subdomain != "" && var.point_to_r53 == true ? 1 : 0
+  point_to_r53    = var.subdomain != "" && var.point_to_r53 == true && var.point_to_lb == true ? 1 : 0
   fargate_version = "1.4.0"
 
   # convert : demo.example.com to example.com
@@ -98,12 +98,24 @@ resource "aws_ecs_service" "ecs_service" {
   force_new_deployment               = var.force_new_deployment
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
-  health_check_grace_period_seconds  = 0 # sum([var.health_check_interval, 10])
+  health_check_grace_period_seconds  = 0
 
+  # for stability a 1 dedicated fargate instance and rest spot
+  # 1 dedicated per 5 spot
   capacity_provider_strategy {
-    base              = 0
-    capacity_provider = var.fargate_spot == true ? "FARGATE_SPOT" : "FARGATE"
+    base              = 1
+    capacity_provider = "FARGATE"
     weight            = 1
+  }
+
+  dynamic "capacity_provider_strategy" {
+    for_each = var.fargate_spot == true ? toset(["create"]) : toset([])
+
+    content {
+      base              = 0
+      capacity_provider = "FARGATE_SPOT"
+      weight            = 5
+    }
   }
 
   network_configuration {
@@ -125,7 +137,8 @@ resource "aws_ecs_service" "ecs_service" {
   tags = merge(
     var.tags,
     {
-      Name = var.service
+      Name = var.service,
+      Environment = var.EnvironmentName
     }
   )
 }

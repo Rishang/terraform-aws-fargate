@@ -17,6 +17,7 @@ module "fargate" {
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
   min_count           = 1
+  fargate_spot        = true
 
   # networking
   assign_public_ip = true
