@@ -1,7 +1,7 @@
 locals {
   point_to_lb     = var.point_to_lb == true ? 1 : 0
   point_to_r53    = var.subdomain != "" && var.point_to_r53 == true && var.point_to_lb == true ? 1 : 0
-  fargate_version = "1.4.0"
+  fargate_version = "LATEST"
 
   # convert : demo.example.com to example.com
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
@@ -137,7 +137,7 @@ resource "aws_ecs_service" "ecs_service" {
   tags = merge(
     var.tags,
     {
-      Name = var.service,
+      Name        = var.service,
       Environment = var.EnvironmentName
     }
   )
