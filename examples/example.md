@@ -3,6 +3,9 @@
 
 ```terraform
 
+# quick usage look
+
+# things to be created
 # ecs service (memory scaling) >> TargetGroup >> Alb HTTPS rule >> Route53 >> app.example.com
 
 module "fargate" {

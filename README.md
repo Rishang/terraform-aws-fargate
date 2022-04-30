@@ -3,11 +3,16 @@
 
 ### Usage
 
+[For examples and refrences click here.](https://github.com/Rishang/terraform-aws-fargate/tree/main/examples)
+
 
 
 
 ```terraform
 
+# quick usage look
+
+# things to be created
 # ecs service (memory scaling) >> TargetGroup >> Alb HTTPS rule >> Route53 >> app.example.com
 
 module "fargate" {
@@ -51,6 +56,7 @@ module "fargate" {
 }
 ```
 
+
 ## Providers
 
 | Name | Version |
@@ -68,7 +74,7 @@ module "fargate" {
 | <a name="output_service_id"></a> [service\_id](#output\_service\_id) | ecs fargate application service id. |
 | <a name="output_service_name"></a> [service\_name](#output\_service\_name) | ecs fargate application service name. |
 
-## tfvar inputs
+## available tfvar inputs
 
 ```hcl
 # null are required inputs,

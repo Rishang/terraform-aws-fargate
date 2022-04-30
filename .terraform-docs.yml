@@ -9,13 +9,16 @@ content: |-
   
   ### Usage
 
+  [For examples and refrences click here.](https://github.com/Rishang/terraform-aws-fargate/tree/main/examples)
+
   {{ include "examples/example.md" }}
 
+  
   {{ .Providers }}
 
   {{ .Outputs }}
 
-  ## tfvar inputs
+  ## available tfvar inputs
 
   ```hcl
   # null are required inputs, 
