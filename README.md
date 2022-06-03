@@ -80,34 +80,7 @@ module "fargate" {
 # null are required inputs,
 # others are optional default values
 
-EnvironmentName                    = null
-assign_public_ip                   = false
-cluster                            = null
-container_port                     = -1
-cpu_scale_target                   = -1
-deployment_maximum_percent         = 200
-deployment_minimum_healthy_percent = 100
-ecs_subnets                        = null
-fargate_spot                       = false
-force_new_deployment               = false
-health_check_interval              = 20
-health_check_matcher               = "200,202"
-health_check_path                  = "/"
-listener_arn_https                 = ""
-memory_scale_target                = -1
-min_count                          = 1
-path_pattern                       = ["/", "/*"]
-point_to_lb                        = false
-point_to_r53                       = false
-scale_in_cooldown                  = 250
-scale_max_capacity                 = 20
-scale_out_cooldown                 = 250
-security_groups                    = []
-service                            = null
-subdomain                          = ""
-tags                               = {}
-task_definition_arn                = null
-vpc_id                             = ""
+
 ```
 
 ## Inputs
@@ -129,6 +102,7 @@ vpc_id                             = ""
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | target group health check interval time in sec | `number` | `20` | no |
 | <a name="input_health_check_matcher"></a> [health\_check\_matcher](#input\_health\_check\_matcher) | Service health check response matcher | `string` | `"200,202"` | no |
 | <a name="input_health_check_path"></a> [health\_check\_path](#input\_health\_check\_path) | Health check path for ecs running containers | `string` | `"/"` | no |
+| <a name="input_lb_scale_target"></a> [lb\_scale\_target](#input\_lb\_scale\_target) | Treshold target requests traffic value from alb, for autoscaling ecs service | `number` | `-1` | no |
 | <a name="input_listener_arn_https"></a> [listener\_arn\_https](#input\_listener\_arn\_https) | HTTPS listner arn for Application Load Balencer (required if 'point\_to\_lb' is true) | `string` | `""` | no |
 | <a name="input_memory_scale_target"></a> [memory\_scale\_target](#input\_memory\_scale\_target) | Treshold memory target value for autoscaling ecs service | `number` | `-1` | no |
 | <a name="input_min_count"></a> [min\_count](#input\_min\_count) | Min count of containers | `number` | `1` | no |

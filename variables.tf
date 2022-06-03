@@ -89,6 +89,12 @@ variable "memory_scale_target" {
   default     = -1
 }
 
+variable "lb_scale_target" {
+  type = number
+  description = "Treshold target requests traffic value from alb, for autoscaling ecs service"
+  default = -1
+}
+
 variable "scale_in_cooldown" {
   type        = number
   description = "The amount of time, in sec, after a scale in activity completes before another scale in activity can start."

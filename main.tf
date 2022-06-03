@@ -83,7 +83,7 @@ resource "aws_lb_listener_rule" "https" {
 
 # ----------------- ECS SERVICE ------------------------------
 
-resource "aws_ecs_service" "ecs_service" {
+resource "aws_ecs_service" "fargate" {
 
   lifecycle {
     ignore_changes = [desired_count]
@@ -152,7 +152,7 @@ data "aws_route53_zone" "web" {
 
 resource "aws_route53_record" "web" {
   count      = local.point_to_r53
-  depends_on = [aws_ecs_service.ecs_service]
+  depends_on = [aws_ecs_service.fargate]
 
   zone_id = data.aws_route53_zone.web[0].id
   name    = var.subdomain
@@ -171,25 +171,24 @@ resource "aws_route53_record" "web" {
 
 # cpu base scale
 
-resource "aws_appautoscaling_target" "cpu_scale_up" {
-  count      = var.cpu_scale_target > 0 ? 1 : 0
-  depends_on = [aws_ecs_service.ecs_service]
+resource "aws_appautoscaling_target" "scaling" {
+  count      = (var.cpu_scale_target > 0 || var.memory_scale_target > 0) ? 1 : 0
+
 
   min_capacity       = var.min_count
   max_capacity       = var.scale_max_capacity
-  resource_id        = "service/${var.cluster}/${var.service}"
+  resource_id        = "service/${var.cluster}/${aws_ecs_service.fargate.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
 
 resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
   count      = var.cpu_scale_target > 0 ? 1 : 0
-  depends_on = [aws_appautoscaling_target.cpu_scale_up]
 
-  name               = "ECSServiceAverageCPUUtilization:${aws_appautoscaling_target.cpu_scale_up[count.index].resource_id}"
+  name               = "ECSServiceAverageCPUUtilization:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = "service/${var.cluster}/${var.service}"
-  scalable_dimension = aws_appautoscaling_target.cpu_scale_up[count.index].scalable_dimension
+  scalable_dimension = aws_appautoscaling_target.scaling[count.index].scalable_dimension
   service_namespace  = "ecs"
 
   target_tracking_scaling_policy_configuration {
@@ -206,25 +205,13 @@ resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
 
 # memory base scale
 
-resource "aws_appautoscaling_target" "memory_scale_up" {
-  count      = var.memory_scale_target > 0 ? 1 : 0
-  depends_on = [aws_ecs_service.ecs_service]
-
-  min_capacity       = var.min_count
-  max_capacity       = var.scale_max_capacity
-  resource_id        = "service/${var.cluster}/${var.service}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
-}
-
 resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
   count      = var.memory_scale_target > 0 ? 1 : 0
-  depends_on = [aws_appautoscaling_target.memory_scale_up]
 
-  name               = "ECSServiceAverageMemoryUtilization:${aws_appautoscaling_target.memory_scale_up[count.index].resource_id}"
+  name               = "ECSServiceAverageMemoryUtilization:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = "service/${var.cluster}/${var.service}"
-  scalable_dimension = aws_appautoscaling_target.memory_scale_up[count.index].scalable_dimension
+  scalable_dimension = aws_appautoscaling_target.scaling[count.index].scalable_dimension
   service_namespace  = "ecs"
 
   target_tracking_scaling_policy_configuration {
@@ -239,33 +226,27 @@ resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
   }
 }
 
-# alb based auto scaling
+# alb based auto scaling 
 
-# resource "aws_appautoscaling_target" "scale_up_policy" {
-#   min_capacity       = var.min_count
-#   max_capacity       = var.scale_max_capacity
-#   resource_id        = "service/${var.cluster}/${var.service}"
-#   scalable_dimension = "ecs:service:DesiredCount"
-#   service_namespace  = "ecs"
-# }
+resource "aws_appautoscaling_policy" "scale_up_policy" {
+  count      = var.lb_scale_target > 0 ? 1 : 0
 
-# resource "aws_appautoscaling_policy" "scale_up_policy" {
-#   name               = "ALBRequestCountPerTarget:${aws_appautoscaling_target.scale_up_policy.resource_id}"
-#   policy_type        = "TargetTrackingScaling"
-#   resource_id        = "service/${var.cluster}/${var.service}"
-#   scalable_dimension = aws_appautoscaling_target.scale_up_policy.scalable_dimension
-#   service_namespace  = "ecs"
+  name               = "ALBRequestCountPerTarget:${aws_appautoscaling_target.scaling[count.index].resource_id}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = "service/${var.cluster}/${var.service}"
+  scalable_dimension = aws_appautoscaling_target.scaling[count.index].scalable_dimension
+  service_namespace  = "ecs"
 
-#   target_tracking_scaling_policy_configuration {
+  target_tracking_scaling_policy_configuration {
 
-#     predefined_metric_specification {
-#       predefined_metric_type = "ALBRequestCountPerTarget"
-#       # app/my-alb/778d41231b141a0f/targetgroup/my-alb-target-group/943f017f100becff
-#       resource_label = "${data.aws_lb.lb.arn_suffix}/${aws_lb_target_group.lb_tg.arn_suffix}"
-#     }
+    predefined_metric_specification {
+      predefined_metric_type = "ALBRequestCountPerTarget"
+      # app/my-alb/778d41231b141a0f/targetgroup/my-alb-target-group/943f017f100becff
+      resource_label = "${data.aws_lb.lb[0].arn_suffix}/${aws_lb_target_group.lb_tg[0].arn_suffix}"
+    }
 
-#     target_value = var.target_value
-#     scale_in_cooldown  = var.scale_in_cooldown
-#     scale_out_cooldown = var.scale_out_cooldown
-#   }
-# }
+    target_value = var.lb_scale_target
+    scale_in_cooldown  = var.scale_in_cooldown
+    scale_out_cooldown = var.scale_out_cooldown
+  }
+}

@@ -1,16 +1,16 @@
 output "cluster_name" {
   description = "ecs fargate application cluster name."
-  value       = aws_ecs_service.ecs_service.cluster
+  value       = aws_ecs_service.fargate.cluster
 }
 
 output "service_name" {
   description = "ecs fargate application service name."
-  value       = aws_ecs_service.ecs_service.name
+  value       = aws_ecs_service.fargate.name
 }
 
 output "service_id" {
   description = "ecs fargate application service id."
-  value       = aws_ecs_service.ecs_service.id
+  value       = aws_ecs_service.fargate.id
 }
 
 output "service_domain_name" {
