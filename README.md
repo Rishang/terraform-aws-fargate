@@ -17,7 +17,7 @@
 
 module "fargate" {
   source = "Rishang/fargate/aws"
-  version = "1.1.0"
+  version = "1.2.0"
 
   EnvironmentName = "test"
 
@@ -80,7 +80,35 @@ module "fargate" {
 # null are required inputs,
 # others are optional default values
 
-
+EnvironmentName                    = null
+assign_public_ip                   = false
+cluster                            = null
+container_port                     = -1
+cpu_scale_target                   = -1
+deployment_maximum_percent         = 200
+deployment_minimum_healthy_percent = 100
+ecs_subnets                        = null
+fargate_spot                       = false
+force_new_deployment               = false
+health_check_interval              = 20
+health_check_matcher               = "200,202"
+health_check_path                  = "/"
+lb_scale_target                    = -1
+listener_arn_https                 = ""
+memory_scale_target                = -1
+min_count                          = 1
+path_pattern                       = ["/", "/*"]
+point_to_lb                        = false
+point_to_r53                       = false
+scale_in_cooldown                  = 250
+scale_max_capacity                 = 20
+scale_out_cooldown                 = 250
+security_groups                    = []
+service                            = null
+subdomain                          = ""
+tags                               = {}
+task_definition_arn                = null
+vpc_id                             = ""
 ```
 
 ## Inputs
