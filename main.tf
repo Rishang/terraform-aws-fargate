@@ -5,8 +5,8 @@ locals {
 
   failure_threshold = 2
 
-  enable_discovery  = var.enable_discovery == true ? 1 : 0
-  container_name = var.container_name == "" ? var.service : var.container_name
+  enable_discovery = var.enable_discovery == true ? 1 : 0
+  container_name   = var.container_name == "" ? var.service : var.container_name
 
   # convert : demo.example.com to example.com
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
@@ -141,7 +141,7 @@ resource "aws_ecs_service" "fargate" {
   }
 
   dynamic "capacity_provider_strategy" {
-    for_each = var.fargate_spot == true ? toset(["create"]) : toset([])
+    for_each = toset(var.fargate_spot == true ? ["create"] : [])
 
     content {
       base              = 0
@@ -151,7 +151,7 @@ resource "aws_ecs_service" "fargate" {
   }
 
   dynamic "service_registries" {
-    for_each = var.enable_discovery == true ? toset(["create"]) : toset([])
+    for_each = toset(var.enable_discovery == true ? ["create"] : [])
 
     content {
       registry_arn   = aws_service_discovery_service.fargate[0].arn
