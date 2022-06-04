@@ -1,0 +1,14 @@
+
+#!/bin/sh
+#
+# Hook script to perform formating terraform code (terraform fmt) before commit
+
+
+echo $PWD
+
+TF_FILES=`git diff --name-only --cached | grep -E "(\.(tf|tfvars))$"`
+
+for i in $TF_FILES; do
+    terraform fmt $TF_FILES
+    git add $TF_FILES
+done
