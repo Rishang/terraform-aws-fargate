@@ -3,6 +3,11 @@ locals {
   point_to_r53    = var.subdomain != "" && var.point_to_r53 == true && var.point_to_lb == true ? 1 : 0
   fargate_version = "LATEST"
 
+  failure_threshold = 2
+
+  enable_discovery  = var.enable_discovery == true ? 1 : 0
+  container_name = var.container_name == "" ? var.service : var.container_name
+
   # convert : demo.example.com to example.com
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
 }
@@ -41,7 +46,7 @@ resource "aws_lb_target_group" "lb_tg" {
     protocol            = "HTTP"
     matcher             = var.health_check_matcher
     healthy_threshold   = 3
-    unhealthy_threshold = 2
+    unhealthy_threshold = local.failure_threshold
     timeout             = 10
   }
   tags = {
@@ -81,6 +86,33 @@ resource "aws_lb_listener_rule" "https" {
 }
 
 
+# ----------------- SERVICE DISCOVERY ---------------------
+
+resource "aws_service_discovery_service" "fargate" {
+  count = local.enable_discovery
+
+  description = "discovery for service: ${var.service} for cluster: ${var.cluster}"
+
+  name          = var.service
+  force_destroy = true
+
+  dns_config {
+    namespace_id = var.namespace_id
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+  }
+
+  health_check_custom_config {
+    failure_threshold = local.failure_threshold
+  }
+
+  tags = var.tags
+
+}
+
 # ----------------- ECS SERVICE ------------------------------
 
 resource "aws_ecs_service" "fargate" {
@@ -118,6 +150,15 @@ resource "aws_ecs_service" "fargate" {
     }
   }
 
+  dynamic "service_registries" {
+    for_each = var.enable_discovery == true ? toset(["create"]) : toset([])
+
+    content {
+      registry_arn   = aws_service_discovery_service.fargate[0].arn
+      container_name = local.container_name
+    }
+  }
+
   network_configuration {
     subnets          = var.ecs_subnets
     security_groups  = var.security_groups
@@ -129,7 +170,7 @@ resource "aws_ecs_service" "fargate" {
 
     content {
       target_group_arn = aws_lb_target_group.lb_tg[0].arn
-      container_name   = var.service
+      container_name   = local.container_name
       container_port   = var.container_port
     }
   }
@@ -172,7 +213,7 @@ resource "aws_route53_record" "web" {
 # cpu base scale
 
 resource "aws_appautoscaling_target" "scaling" {
-  count      = (var.cpu_scale_target > 0 || var.memory_scale_target > 0) ? 1 : 0
+  count = (var.cpu_scale_target > 0 || var.memory_scale_target > 0) ? 1 : 0
 
 
   min_capacity       = var.min_count
@@ -183,7 +224,7 @@ resource "aws_appautoscaling_target" "scaling" {
 }
 
 resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
-  count      = var.cpu_scale_target > 0 ? 1 : 0
+  count = var.cpu_scale_target > 0 ? 1 : 0
 
   name               = "ECSServiceAverageCPUUtilization:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
@@ -206,7 +247,7 @@ resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
 # memory base scale
 
 resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
-  count      = var.memory_scale_target > 0 ? 1 : 0
+  count = var.memory_scale_target > 0 ? 1 : 0
 
   name               = "ECSServiceAverageMemoryUtilization:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
@@ -229,7 +270,7 @@ resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
 # alb based auto scaling 
 
 resource "aws_appautoscaling_policy" "scale_up_policy" {
-  count      = var.lb_scale_target > 0 ? 1 : 0
+  count = var.lb_scale_target > 0 ? 1 : 0
 
   name               = "ALBRequestCountPerTarget:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
@@ -245,7 +286,7 @@ resource "aws_appautoscaling_policy" "scale_up_policy" {
       resource_label = "${data.aws_lb.lb[0].arn_suffix}/${aws_lb_target_group.lb_tg[0].arn_suffix}"
     }
 
-    target_value = var.lb_scale_target
+    target_value       = var.lb_scale_target
     scale_in_cooldown  = var.scale_in_cooldown
     scale_out_cooldown = var.scale_out_cooldown
   }

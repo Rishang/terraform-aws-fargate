@@ -45,6 +45,13 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
+# ------------------- SERVICE DISCOVERY ---------------------------
+
+resource "aws_service_discovery_private_dns_namespace" "service" {
+  name = "service"
+  vpc  = data.aws_vpc.default.id
+}
+
 # ------------------------ ECS ------------------------------------
 
 resource "aws_ecs_cluster" "app" {
@@ -99,7 +106,7 @@ module "fargate" {
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  min_count           = 2
+  min_count           = 3
   fargate_spot        = true
 
   # networking
@@ -120,6 +127,10 @@ module "fargate" {
   memory_scale_target = 60
   # cpu_scale_target    = 60
 
+  # service discovery
+  enable_discovery = true
+
+  namespace_id = aws_service_discovery_private_dns_namespace.service.id
 
   tags = {
     Name         = "whoami"

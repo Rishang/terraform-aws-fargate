@@ -90,9 +90,9 @@ variable "memory_scale_target" {
 }
 
 variable "lb_scale_target" {
-  type = number
+  type        = number
   description = "Treshold target requests traffic value from alb, for autoscaling ecs service"
-  default = -1
+  default     = -1
 }
 
 variable "scale_in_cooldown" {
@@ -173,6 +173,19 @@ variable "path_pattern" {
   default     = ["/", "/*"]
 }
 
+# --------------------- SERVICE DISCOVERY ---------------------------------
+
+variable "enable_discovery" {
+  type        = bool
+  description = "Enable service discovery, requires `namespace_id` and `container_name`"
+  default     = false
+}
+
+variable "namespace_id" {
+  type        = string
+  description = "Namespace id (private) for service discovery, Note: discovery endpoint's subdomain will be same as service name"
+  default     = ""
+}
 
 # --------------------- OTHERS ---------------------------------------------
 
@@ -180,4 +193,10 @@ variable "container_port" {
   type        = number
   description = "container application port"
   default     = -1
+}
+
+variable "container_name" {
+  type        = string
+  description = "Required if service name is different than main application container_name of task defination"
+  default     = ""
 }
