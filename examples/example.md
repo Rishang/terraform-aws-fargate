@@ -25,7 +25,7 @@ module "fargate" {
   # networking
   assign_public_ip = true
   vpc_id           = "vpc-demos7"
-  ecs_subnets      = ["subnet-a2b3","subnet-c9da","subnet-0b23"]
+  subnets      = ["subnet-a2b3","subnet-c9da","subnet-0b23"]
   security_groups  = ["sg-f34d92"]
 
   # load balancer (optional)

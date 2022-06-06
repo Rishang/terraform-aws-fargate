@@ -130,7 +130,7 @@ variable "vpc_id" {
   default     = ""
 }
 
-variable "ecs_subnets" {
+variable "subnets" {
   type        = list(string)
   description = "List of subnets for ecs service"
 }

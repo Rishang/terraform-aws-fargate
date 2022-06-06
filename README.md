@@ -32,7 +32,7 @@ module "fargate" {
   # networking
   assign_public_ip = true
   vpc_id           = "vpc-demos7"
-  ecs_subnets      = ["subnet-a2b3","subnet-c9da","subnet-0b23"]
+  subnets      = ["subnet-a2b3","subnet-c9da","subnet-0b23"]
   security_groups  = ["sg-f34d92"]
 
   # load balancer (optional)
@@ -68,11 +68,14 @@ module "fargate" {
 | Name | Description |
 |------|-------------|
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | ecs fargate application cluster name. |
-| <a name="output_service_domain_id"></a> [service\_domain\_id](#output\_service\_domain\_id) | application route53 endpoint id. (if provided) |
-| <a name="output_service_domain_name"></a> [service\_domain\_name](#output\_service\_domain\_name) | application service domain name. (if provided) |
-| <a name="output_service_domain_type"></a> [service\_domain\_type](#output\_service\_domain\_type) | application route53 endpoint domain type eg. [A, CNAME]. (if provided) |
-| <a name="output_service_id"></a> [service\_id](#output\_service\_id) | ecs fargate application service id. |
-| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | ecs fargate application service name. |
+| <a name="output_discovery_arn"></a> [discovery\_arn](#output\_discovery\_arn) | application service discovery name. (if provided) |
+| <a name="output_discovery_id"></a> [discovery\_id](#output\_discovery\_id) | application service discovery name. (if provided) |
+| <a name="output_discovery_name"></a> [discovery\_name](#output\_discovery\_name) | application service discovery name. (if provided) |
+| <a name="output_domain_id"></a> [domain\_id](#output\_domain\_id) | application route53 endpoint id. (if provided) |
+| <a name="output_domain_name"></a> [domain\_name](#output\_domain\_name) | application service domain name. (if provided) |
+| <a name="output_domain_type"></a> [domain\_type](#output\_domain\_type) | application route53 endpoint domain type eg. [A, CNAME]. (if provided) |
+| <a name="output_id"></a> [id](#output\_id) | ecs fargate application service id. |
+| <a name="output_name"></a> [name](#output\_name) | ecs fargate application service name. |
 
 ## available tfvar inputs
 
@@ -83,11 +86,12 @@ module "fargate" {
 EnvironmentName                    = null
 assign_public_ip                   = false
 cluster                            = null
+container_name                     = ""
 container_port                     = -1
 cpu_scale_target                   = -1
 deployment_maximum_percent         = 200
 deployment_minimum_healthy_percent = 100
-ecs_subnets                        = null
+enable_discovery                   = false
 fargate_spot                       = false
 force_new_deployment               = false
 health_check_interval              = 20
@@ -97,6 +101,7 @@ lb_scale_target                    = -1
 listener_arn_https                 = ""
 memory_scale_target                = -1
 min_count                          = 1
+namespace_id                       = ""
 path_pattern                       = ["/", "/*"]
 point_to_lb                        = false
 point_to_r53                       = false
@@ -106,6 +111,7 @@ scale_out_cooldown                 = 250
 security_groups                    = []
 service                            = null
 subdomain                          = ""
+subnets                            = null
 tags                               = {}
 task_definition_arn                = null
 vpc_id                             = ""
@@ -117,14 +123,16 @@ vpc_id                             = ""
 |------|-------------|------|---------|:--------:|
 | <a name="input_EnvironmentName"></a> [EnvironmentName](#input\_EnvironmentName) | The name of the infra environment to deploy to eg. dev, prod, test | `string` | n/a | yes |
 | <a name="input_cluster"></a> [cluster](#input\_cluster) | The name of the cluster that hosts the service | `any` | n/a | yes |
-| <a name="input_ecs_subnets"></a> [ecs\_subnets](#input\_ecs\_subnets) | List of subnets for ecs service | `list(string)` | n/a | yes |
 | <a name="input_service"></a> [service](#input\_service) | Fargate service name | `any` | n/a | yes |
+| <a name="input_subnets"></a> [subnets](#input\_subnets) | List of subnets for ecs service | `list(string)` | n/a | yes |
 | <a name="input_task_definition_arn"></a> [task\_definition\_arn](#input\_task\_definition\_arn) | The ARN of the task definition to use for the ECS service | `string` | n/a | yes |
 | <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | Auto assign public ip for ecs containers | `bool` | `false` | no |
+| <a name="input_container_name"></a> [container\_name](#input\_container\_name) | Required if service name is different than main application container\_name of task defination | `string` | `""` | no |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | container application port | `number` | `-1` | no |
 | <a name="input_cpu_scale_target"></a> [cpu\_scale\_target](#input\_cpu\_scale\_target) | Treshold cpu target value for autoscaling ecs service | `number` | `-1` | no |
 | <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Deployment max healthy percent of container count | `number` | `200` | no |
 | <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Deployment min healthy percent of container count | `number` | `100` | no |
+| <a name="input_enable_discovery"></a> [enable\_discovery](#input\_enable\_discovery) | Enable service discovery, requires `namespace_id` and `container_name` | `bool` | `false` | no |
 | <a name="input_fargate_spot"></a> [fargate\_spot](#input\_fargate\_spot) | Whether to use fargate spot instances or not. | `bool` | `false` | no |
 | <a name="input_force_new_deployment"></a> [force\_new\_deployment](#input\_force\_new\_deployment) | Enable to force a new task deployment of the service | `bool` | `false` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | target group health check interval time in sec | `number` | `20` | no |
@@ -134,6 +142,7 @@ vpc_id                             = ""
 | <a name="input_listener_arn_https"></a> [listener\_arn\_https](#input\_listener\_arn\_https) | HTTPS listner arn for Application Load Balencer (required if 'point\_to\_lb' is true) | `string` | `""` | no |
 | <a name="input_memory_scale_target"></a> [memory\_scale\_target](#input\_memory\_scale\_target) | Treshold memory target value for autoscaling ecs service | `number` | `-1` | no |
 | <a name="input_min_count"></a> [min\_count](#input\_min\_count) | Min count of containers | `number` | `1` | no |
+| <a name="input_namespace_id"></a> [namespace\_id](#input\_namespace\_id) | Namespace id (private) for service discovery, Note: discovery endpoint's subdomain will be same as service name | `string` | `""` | no |
 | <a name="input_path_pattern"></a> [path\_pattern](#input\_path\_pattern) | List of paths for alb to route traffic at ecs target group | `list(string)` | <pre>[<br>  "/",<br>  "/*"<br>]</pre> | no |
 | <a name="input_point_to_lb"></a> [point\_to\_lb](#input\_point\_to\_lb) | Enable to point to ALB (load balancer) | `bool` | `false` | no |
 | <a name="input_point_to_r53"></a> [point\_to\_r53](#input\_point\_to\_r53) | Enable to point to R53 | `bool` | `false` | no |

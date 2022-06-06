@@ -105,7 +105,7 @@ module "fargate" {
   # networking
   assign_public_ip = true
   vpc_id           = data.aws_vpc.default.id
-  ecs_subnets      = data.aws_subnets.default.ids
+  subnets      = data.aws_subnets.default.ids
   security_groups  = [aws_security_group.ecs_sg.id]
 
   # load balancer
