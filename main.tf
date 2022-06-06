@@ -78,9 +78,13 @@ resource "aws_lb_listener_rule" "https" {
     }
   }
 
-  condition {
-    host_header {
-      values = [var.subdomain == "" ? "*" : var.subdomain]
+  dynamic "condition" {
+    for_each = toset(var.subdomain != "" ? ["create"] : [])
+
+    content {
+      host_header {
+        values = [var.subdomain]
+      }
     }
   }
 }
