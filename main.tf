@@ -32,7 +32,7 @@ resource "aws_lb_target_group" "lb_tg" {
     create_before_destroy = true
   }
 
-  name        = "${var.EnvironmentName}-${var.cluster}-${var.service}"
+  name        = "${var.cluster}-${var.service}"
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
