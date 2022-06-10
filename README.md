@@ -17,7 +17,7 @@
 
 module "fargate" {
   source = "Rishang/fargate/aws"
-  version = "1.2.0"
+  version = "1.3.0"
 
   EnvironmentName = "test"
 
@@ -47,6 +47,9 @@ module "fargate" {
   memory_scale_target = 60
   # cpu_scale_target  = 60
 
+  # service discovery (optional)
+  enable_discovery = true
+  namespace_id = aws_service_discovery_private_dns_namespace.service.id
 
   tags = {
     Name         = "whoami"
