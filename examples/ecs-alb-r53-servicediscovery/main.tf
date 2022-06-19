@@ -56,6 +56,15 @@ resource "aws_service_discovery_private_dns_namespace" "service" {
 
 resource "aws_ecs_cluster" "app" {
   name = local.cluster_name
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+  tags = {
+    Name = local.cluster_name
+  }
 }
 
 resource "aws_ecs_cluster_capacity_providers" "app" {
