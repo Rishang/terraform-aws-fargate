@@ -16,7 +16,7 @@
 # ecs service (memory scaling) >> TargetGroup >> Alb HTTPS rule >> Route53 >> app.example.com
 
 module "fargate" {
-  source = "Rishang/fargate/aws"
+  source  = "Rishang/fargate/aws"
   version = "1.3.0"
 
   EnvironmentName = "test"
@@ -49,7 +49,7 @@ module "fargate" {
 
   # service discovery (optional)
   enable_discovery = true
-  namespace_id = aws_service_discovery_private_dns_namespace.service.id
+  namespace_id     = aws_service_discovery_private_dns_namespace.service.id
 
   tags = {
     Name         = "whoami"
