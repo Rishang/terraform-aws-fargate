@@ -27,7 +27,12 @@ module "fargate" {
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
   min_count           = 3
+  
   fargate_spot        = true
+  
+  # default to true, only set force_spot to false
+  # if you want to use mixed on-demand and spot instances 
+  force_spot        = false
 
   # networking
   assign_public_ip = true
@@ -97,6 +102,7 @@ deployment_minimum_healthy_percent = 100
 enable_discovery                   = false
 fargate_spot                       = false
 force_new_deployment               = false
+force_spot                         = true
 health_check_interval              = 20
 health_check_matcher               = "200,202"
 health_check_path                  = "/"
@@ -138,6 +144,7 @@ vpc_id                             = ""
 | <a name="input_enable_discovery"></a> [enable\_discovery](#input\_enable\_discovery) | Enable service discovery, requires `namespace_id` and `container_name` | `bool` | `false` | no |
 | <a name="input_fargate_spot"></a> [fargate\_spot](#input\_fargate\_spot) | Whether to use fargate spot instances or not. | `bool` | `false` | no |
 | <a name="input_force_new_deployment"></a> [force\_new\_deployment](#input\_force\_new\_deployment) | Enable to force a new task deployment of the service | `bool` | `false` | no |
+| <a name="input_force_spot"></a> [force\_spot](#input\_force\_spot) | Set only fargate spot as Capacity provider. | `bool` | `true` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | target group health check interval time in sec | `number` | `20` | no |
 | <a name="input_health_check_matcher"></a> [health\_check\_matcher](#input\_health\_check\_matcher) | Service health check response matcher | `string` | `"200,202"` | no |
 | <a name="input_health_check_path"></a> [health\_check\_path](#input\_health\_check\_path) | Health check path for ecs running containers | `string` | `"/"` | no |

@@ -138,17 +138,21 @@ resource "aws_ecs_service" "fargate" {
 
   # for stability a 1 dedicated fargate instance and rest spot
   # 1 dedicated per 5 spot
-  capacity_provider_strategy {
-    base              = 1
-    capacity_provider = "FARGATE"
-    weight            = 1
+  dynamic "capacity_provider_strategy" {
+    for_each = toset(var.fargate_spot == true && var.force_spot == false ? ["create"] : [])
+
+    content {
+      base              = 1
+      capacity_provider = "FARGATE"
+      weight            = 1
+    }
   }
 
   dynamic "capacity_provider_strategy" {
     for_each = toset(var.fargate_spot == true ? ["create"] : [])
 
     content {
-      base              = 0
+      base              = var.fargate_spot == true && var.force_spot == true ? 1 : 0
       capacity_provider = "FARGATE_SPOT"
       weight            = 5
     }

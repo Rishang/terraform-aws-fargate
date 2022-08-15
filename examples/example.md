@@ -20,7 +20,12 @@ module "fargate" {
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
   min_count           = 3
+  
   fargate_spot        = true
+  
+  # default to true, only set force_spot to false
+  # if you want to use mixed on-demand and spot instances 
+  force_spot        = false
 
   # networking
   assign_public_ip = true

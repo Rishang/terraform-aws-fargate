@@ -111,6 +111,9 @@ module "fargate" {
   min_count           = 2
   fargate_spot        = true
 
+  # keep non spot capacity_provider too
+  force_spot = false
+
   # networking
   assign_public_ip = true
   vpc_id           = data.aws_vpc.default.id

@@ -32,6 +32,12 @@ variable "fargate_spot" {
   default     = false
 }
 
+variable "force_spot" {
+  type        = bool
+  description = "Set only fargate spot as Capacity provider."
+  default     = true
+}
+
 variable "assign_public_ip" {
   type        = bool
   description = "Auto assign public ip for ecs containers"
