@@ -136,6 +136,7 @@ resource "aws_ecs_service" "fargate" {
   deployment_maximum_percent         = var.deployment_maximum_percent
   health_check_grace_period_seconds  = 0
 
+  enable_ecs_managed_tags = var.enable_ecs_managed_tags
   # for stability a 1 dedicated fargate instance and rest spot
   # 1 dedicated per 5 spot
   dynamic "capacity_provider_strategy" {

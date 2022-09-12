@@ -56,6 +56,12 @@ variable "security_groups" {
   default     = []
 }
 
+variable "enable_ecs_managed_tags" {
+  type        = bool
+  description = "Specifies whether to enable Amazon ECS managed tags for the service."
+  default     = false
+}
+
 variable "deployment_minimum_healthy_percent" {
   type        = number
   description = "Deployment min healthy percent of container count"
