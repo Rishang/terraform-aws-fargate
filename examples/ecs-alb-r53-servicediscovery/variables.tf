@@ -6,6 +6,7 @@ variable "certificate_domain" {
 variable "extra_certificate_domains" {
   description = "The extra domain names to add to the certificate eg: [\"example.com\", \"www.example.com\"]"
   type        = list(string)
+  default     = []
 }
 
 variable "EnvironmentName" {

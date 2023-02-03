@@ -39,3 +39,7 @@ terraform.rc
 temp-*
 tmp
 providers.tf
+
+# localstack
+localstack_aws_provider.tf
+.env
