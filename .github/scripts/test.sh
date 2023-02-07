@@ -25,7 +25,7 @@ function _tf_cleanup() {
 _tf_cleanup
 
 docker-compose up -d && sleep 5
-cd $TEST_DIR/$STACK_NAME && _tf_apply
+cd $TEST_DIR/$STACK_NAME && terraform init && _tf_apply
 docker-compose down -v
 
 _tf_cleanup
