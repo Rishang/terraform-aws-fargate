@@ -8,13 +8,13 @@ terraform {
 }
 
 # Configure the AWS Provider
-provider "aws" {
-  region = "eu-west-2"
+# provider "aws" {
+#   region = "eu-west-2"
 
-  default_tags {
-    tags = {
-      Environment = "Test"
-      Creator     = "Terraform"
-    }
-  }
-}
+#   default_tags {
+#     tags = {
+#       Environment = "Test"
+#       Creator     = "Terraform"
+#     }
+#   }
+# }

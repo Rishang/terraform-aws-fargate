@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  localstack:
+    image: localstack/localstack-pro
+    container_name: localstack-pro
+    ports:
+      - 4566:4566
+      - 4510-4559:4510-4559
+    environment:
+      - LOCALSTACK_API_KEY
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
