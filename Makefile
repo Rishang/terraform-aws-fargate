@@ -24,7 +24,7 @@ set-local:
 	curl -o examples/ecs/localstack_aws_provider.tf $(TF_PROVIDER_FILE)
 	curl -o examples/ecs-alb-r53/localstack_aws_provider.tf $(TF_PROVIDER_FILE)
 	curl -o examples/ecs-alb-r53-servicediscovery/localstack_aws_provider.tf $(TF_PROVIDER_FILE)
-	docker-compose up -d || echo
+	(docker-compose pull && docker-compose up -d) || echo
 
 unset-local:
 	docker-compose down
