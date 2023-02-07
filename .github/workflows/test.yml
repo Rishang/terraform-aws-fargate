@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment:
+    env:
       LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
       TEST_DIR: examples
     defaults:
