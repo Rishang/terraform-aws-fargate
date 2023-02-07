@@ -32,3 +32,9 @@ unset-local:
 # source: https://www.infracost.io/docs/
 estimate:
 	infracost breakdown --path .
+
+clean:
+	find . -type f  -regex  '.*/terraform.tfstate.*' | xargs rm
+
+test:
+	bash .github/scripts/test.sh

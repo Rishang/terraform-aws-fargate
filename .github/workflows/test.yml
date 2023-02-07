@@ -1,0 +1,30 @@
+name: Test LocalStack
+run-name: ${{ github.actor }} is testing out ${{ github.repository }}
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment:
+      LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+      TEST_DIR: examples
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Install terraform
+        uses: hashicorp/setup-terraform@v2
+
+      # start local stack and wait for service to be available for sometime
+      - name: Setup LocalStack
+        run: make set-local
+
+      - name: Test Plan and Apply Examples ECS
+        run: STACK_NAME=ecs make test
