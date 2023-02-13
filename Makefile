@@ -1,7 +1,7 @@
 # Applies to every targets in the file! https://www.gnu.org/software/make/manual/html_node/One-Shell.html
 .ONESHELL:
 
-TF_PROVIDER_FILE = https://gist.githubusercontent.com/th-rishang/ec62a89a9e77debe3b533ccaf0a1a613/raw/98469e2c06d4d04525cd14ff0b435d7821b3f103/localstack_terraform_conf.tf
+TF_PROVIDER_FILE = https://gitlab.com/-/snippets/2498907/raw/main/localstack_terraform_conf.tf
 lint:
 	terraform validate
 

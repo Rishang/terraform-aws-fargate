@@ -19,7 +19,7 @@ function _tf_apply() {
 }
 
 function _tf_cleanup() {
-    find . -type f  -regex  '.*/terraform.tfstate.*' | xargs rm
+    find . -type f  -regex  '.*/terraform.tfstate.*' | xargs rm -f
 }
 
 _tf_cleanup
