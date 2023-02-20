@@ -8,13 +8,15 @@ on:
   push:
     branches:
       - main
+env:
+  TEST_DIR: examples
 
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
       LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
-      TEST_DIR: examples
+ 
     defaults:
       run:
         shell: bash
