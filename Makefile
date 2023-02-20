@@ -34,7 +34,7 @@ estimate:
 	infracost breakdown --path .
 
 clean:
-	find . -type f  -regex  '.*/terraform.tfstate.*' | xargs rm
+	find . -type f  -regex  '.*/terraform.tfstate.*' | xargs rm -f
 
 test:
 	bash .github/scripts/test.sh

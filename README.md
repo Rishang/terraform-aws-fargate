@@ -1,6 +1,8 @@
 <!-- BEGIN_TF_DOCS -->
 # aws ecs fargate terraform module
 
+![Local Test](https://github.com/Rishang/terraform-aws-fargate/actions/workflows/test.yml/badge.svg)
+
 ### Usage
 
 [For examples and refrences click here.](https://github.com/Rishang/terraform-aws-fargate/tree/main/examples)
