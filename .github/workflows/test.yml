@@ -28,6 +28,11 @@ jobs:
       # start local stack and wait for service to be available for sometime
       - name: Setup LocalStack
         run: make set-local
+      
+      # cache docker layers
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
 
       - name: Test Plan and Apply Examples ECS
         run: STACK_NAME=ecs make test
