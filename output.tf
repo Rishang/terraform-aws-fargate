@@ -1,44 +1,34 @@
-output "cluster_name" {
-  description = "ecs fargate application cluster name."
-  value       = aws_ecs_service.fargate.cluster
-}
-
-output "name" {
-  description = "ecs fargate application service name."
+output "service_name" {
   value       = aws_ecs_service.fargate.name
+  description = "Name of the ECS service"
 }
 
-output "id" {
-  description = "ecs fargate application service id."
-  value       = aws_ecs_service.fargate.id
+output "service_arn" {
+  value       = aws_ecs_service.fargate.arn
+  description = "ARN of the ECS service"
 }
 
-output "domain_name" {
-  description = "application service domain name. (if provided)"
-  value       = join("", aws_route53_record.web[*].name)
+output "task_definition_arn" {
+  value       = aws_ecs_service.fargate.task_definition
+  description = "ARN of the task definition used by the service"
 }
 
-output "domain_id" {
-  description = "application route53 endpoint id. (if provided)"
-  value       = join("", aws_route53_record.web[*].id)
+output "load_balancer_dns_name" {
+  value       = data.aws_lb.lb.dns_name
+  description = "DNS name of the ALB associated with the service"
 }
 
-output "domain_type" {
-  description = "application route53 endpoint domain type eg. [A, CNAME]. (if provided)"
-  value       = join("", aws_route53_record.web[*].type)
+output "scaling_policy_arn_cpu" {
+  value       = aws_appautoscaling_policy.cpu_scale_up_policy.arn
+  description = "ARN of the scaling policy for CPU usage"
 }
 
-output "discovery_name" {
-  description = "application service discovery name. (if provided)"
-  value       = join("", aws_service_discovery_service.fargate[*].name)
+output "scaling_policy_arn_memory" {
+  value       = aws_appautoscaling_policy.memory_scale_up_policy.arn
+  description = "ARN of the scaling policy for memory usage"
 }
 
-output "discovery_arn" {
-  description = "application service discovery name. (if provided)"
-  value       = join("", aws_service_discovery_service.fargate[*].arn)
-}
-
-output "discovery_id" {
-  description = "application service discovery name. (if provided)"
-  value       = join("", aws_service_discovery_service.fargate[*].id)
+output "scaling_policy_arn_lb" {
+  value       = aws_appautoscaling_policy.scale_up_policy.arn
+  description = "ARN of the scaling policy for ALB requests"
 }
