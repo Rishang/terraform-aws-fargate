@@ -1,8 +1,6 @@
 <!-- BEGIN_TF_DOCS -->
 # aws ecs fargate terraform module
 
-![Local Test](https://github.com/Rishang/terraform-aws-fargate/actions/workflows/test.yml/badge.svg)
-
 ### Usage
 
 [For examples and refrences click here.](https://github.com/Rishang/terraform-aws-fargate/tree/main/examples)
@@ -19,7 +17,7 @@
 
 module "fargate" {
   source  = "Rishang/fargate/aws"
-  version = "1.4.0"
+  version = "1.3.0"
 
   EnvironmentName = "test"
 
@@ -28,7 +26,7 @@ module "fargate" {
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  min_count           = 3
+  scale_min_capacity           = 3
   
   fargate_spot        = true
   
@@ -90,7 +88,7 @@ module "fargate" {
 ## available tfvar inputs
 
 ```hcl
-# null are required inputs,
+# null are required inputs, 
 # others are optional default values
 
 EnvironmentName                    = null
@@ -105,21 +103,22 @@ enable_discovery                   = false
 enable_ecs_managed_tags            = false
 fargate_spot                       = false
 force_new_deployment               = false
-force_spot                         = true
+force_spot                         = false
 health_check_interval              = 20
 health_check_matcher               = "200,202"
 health_check_path                  = "/"
 lb_scale_target                    = -1
 listener_arn_https                 = ""
 memory_scale_target                = -1
-min_count                          = 1
 namespace_id                       = ""
 path_pattern                       = ["/", "/*"]
 point_to_lb                        = false
 point_to_r53                       = false
 scale_in_cooldown                  = 250
 scale_max_capacity                 = 20
+scale_min_capacity                 = 1
 scale_out_cooldown                 = 250
+scaling_schedule                   = []
 security_groups                    = []
 service                            = null
 subdomain                          = ""
@@ -148,21 +147,22 @@ vpc_id                             = ""
 | <a name="input_enable_ecs_managed_tags"></a> [enable\_ecs\_managed\_tags](#input\_enable\_ecs\_managed\_tags) | Specifies whether to enable Amazon ECS managed tags for the service. | `bool` | `false` | no |
 | <a name="input_fargate_spot"></a> [fargate\_spot](#input\_fargate\_spot) | Whether to use fargate spot instances or not. | `bool` | `false` | no |
 | <a name="input_force_new_deployment"></a> [force\_new\_deployment](#input\_force\_new\_deployment) | Enable to force a new task deployment of the service | `bool` | `false` | no |
-| <a name="input_force_spot"></a> [force\_spot](#input\_force\_spot) | Set only fargate spot as Capacity provider. | `bool` | `true` | no |
+| <a name="input_force_spot"></a> [force\_spot](#input\_force\_spot) | Set only fargate spot as Capacity provider. | `bool` | `false` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | target group health check interval time in sec | `number` | `20` | no |
 | <a name="input_health_check_matcher"></a> [health\_check\_matcher](#input\_health\_check\_matcher) | Service health check response matcher | `string` | `"200,202"` | no |
 | <a name="input_health_check_path"></a> [health\_check\_path](#input\_health\_check\_path) | Health check path for ecs running containers | `string` | `"/"` | no |
 | <a name="input_lb_scale_target"></a> [lb\_scale\_target](#input\_lb\_scale\_target) | Treshold target requests traffic value from alb, for autoscaling ecs service | `number` | `-1` | no |
 | <a name="input_listener_arn_https"></a> [listener\_arn\_https](#input\_listener\_arn\_https) | HTTPS listner arn for Application Load Balencer (required if 'point\_to\_lb' is true) | `string` | `""` | no |
 | <a name="input_memory_scale_target"></a> [memory\_scale\_target](#input\_memory\_scale\_target) | Treshold memory target value for autoscaling ecs service | `number` | `-1` | no |
-| <a name="input_min_count"></a> [min\_count](#input\_min\_count) | Min count of containers | `number` | `1` | no |
 | <a name="input_namespace_id"></a> [namespace\_id](#input\_namespace\_id) | Namespace id (private) for service discovery, Note: discovery endpoint's subdomain will be same as service name | `string` | `""` | no |
 | <a name="input_path_pattern"></a> [path\_pattern](#input\_path\_pattern) | List of paths for alb to route traffic at ecs target group | `list(string)` | <pre>[<br>  "/",<br>  "/*"<br>]</pre> | no |
 | <a name="input_point_to_lb"></a> [point\_to\_lb](#input\_point\_to\_lb) | Enable to point to ALB (load balancer) | `bool` | `false` | no |
 | <a name="input_point_to_r53"></a> [point\_to\_r53](#input\_point\_to\_r53) | Enable to point to R53 | `bool` | `false` | no |
 | <a name="input_scale_in_cooldown"></a> [scale\_in\_cooldown](#input\_scale\_in\_cooldown) | The amount of time, in sec, after a scale in activity completes before another scale in activity can start. | `number` | `250` | no |
 | <a name="input_scale_max_capacity"></a> [scale\_max\_capacity](#input\_scale\_max\_capacity) | Max count of containers | `number` | `20` | no |
+| <a name="input_scale_min_capacity"></a> [scale\_min\_capacity](#input\_scale\_min\_capacity) | Min count of containers | `number` | `1` | no |
 | <a name="input_scale_out_cooldown"></a> [scale\_out\_cooldown](#input\_scale\_out\_cooldown) | The amount of time, in sec, after a scale out activity completes before another scale in activity can start. | `number` | `250` | no |
+| <a name="input_scaling_schedule"></a> [scaling\_schedule](#input\_scaling\_schedule) | Schedule scaling for ecs service [{"schedule":"cron(0 3 * * ? *)", "min\_capacity": 1, "max\_capacity": 1}] | `list(any)` | `[]` | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | Extra security groups to attach to ecs service | `list(string)` | `[]` | no |
 | <a name="input_subdomain"></a> [subdomain](#input\_subdomain) | Subdomain name you want to give eg: test.example.com (required if 'point\_to\_r53' is true) | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to the resources | `map(any)` | `{}` | no |

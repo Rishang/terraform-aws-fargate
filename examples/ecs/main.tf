@@ -94,7 +94,7 @@ module "fargate" {
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  min_count           = 1
+  scale_min_capacity  = 1
 
   # networking
   assign_public_ip = true

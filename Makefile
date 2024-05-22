@@ -16,6 +16,7 @@ fmt:
 # https://github.com/shihanng/tfvar
 # https://github.com/terraform-docs/terraform-docs
 docs:
+	terraform fmt -recursive
 	tfvar . > vars/example.tfvars
 	terraform-docs .
 

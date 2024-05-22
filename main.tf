@@ -10,6 +10,7 @@ locals {
 
   # convert : demo.example.com to example.com
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
+  asg_target  = (var.cpu_scale_target > 0 || var.memory_scale_target > 0) ? 1 : 0
 }
 
 # ------------------------ DATA ------------------------------
@@ -128,7 +129,7 @@ resource "aws_ecs_service" "fargate" {
   name            = var.service
   cluster         = var.cluster
   task_definition = var.task_definition_arn
-  desired_count   = var.min_count
+  desired_count   = var.scale_min_capacity
 
   platform_version                   = local.fargate_version
   force_new_deployment               = var.force_new_deployment
@@ -222,10 +223,9 @@ resource "aws_route53_record" "web" {
 # cpu base scale
 
 resource "aws_appautoscaling_target" "scaling" {
-  count = (var.cpu_scale_target > 0 || var.memory_scale_target > 0) ? 1 : 0
+  count = local.asg_target
 
-
-  min_capacity       = var.min_count
+  min_capacity       = var.scale_min_capacity
   max_capacity       = var.scale_max_capacity
   resource_id        = "service/${var.cluster}/${aws_ecs_service.fargate.name}"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -298,5 +298,22 @@ resource "aws_appautoscaling_policy" "scale_up_policy" {
     target_value       = var.lb_scale_target
     scale_in_cooldown  = var.scale_in_cooldown
     scale_out_cooldown = var.scale_out_cooldown
+  }
+}
+
+
+resource "aws_appautoscaling_scheduled_action" "scaling_schedule" {
+  depends_on = [aws_appautoscaling_target.scaling]
+  count      = length(var.scaling_schedule) != 0 && local.asg_target != 0 ? length(var.scaling_schedule) : 0
+
+  name               = "${var.service}-schedule-${count.index}"
+  service_namespace  = aws_appautoscaling_target.scaling[0].service_namespace
+  resource_id        = aws_appautoscaling_target.scaling[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.scaling[0].scalable_dimension
+  schedule           = var.scaling_schedule[count.index]["schedule"]
+
+  scalable_target_action {
+    min_capacity = var.scaling_schedule[count.index]["min_capacity"]
+    max_capacity = var.scaling_schedule[count.index]["max_capacity"]
   }
 }

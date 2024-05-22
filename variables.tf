@@ -35,7 +35,7 @@ variable "fargate_spot" {
 variable "force_spot" {
   type        = bool
   description = "Set only fargate spot as Capacity provider."
-  default     = true
+  default     = false
 }
 
 variable "assign_public_ip" {
@@ -77,7 +77,7 @@ variable "deployment_maximum_percent" {
 # ----------------------- Fargate autoscale -------------------------------
 
 
-variable "min_count" {
+variable "scale_min_capacity" {
   type        = number
   description = "Min count of containers"
   default     = 1
@@ -211,4 +211,10 @@ variable "container_name" {
   type        = string
   description = "Required if service name is different than main application container_name of task defination"
   default     = ""
+}
+
+variable "scaling_schedule" {
+  type        = list(any)
+  default     = []
+  description = "Schedule scaling for ecs service [{\"schedule\":\"cron(0 3 * * ? *)\", \"min_capacity\": 1, \"max_capacity\": 1}]"
 }

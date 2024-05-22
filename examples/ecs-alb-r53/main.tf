@@ -108,7 +108,7 @@ module "fargate" {
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  min_count           = 2
+  scale_min_capacity  = 2
   fargate_spot        = true
 
   # keep non spot capacity_provider too
@@ -129,8 +129,8 @@ module "fargate" {
   point_to_r53 = true
 
   # autoscale
-  memory_scale_target = 60
-  # cpu_scale_target    = 60
+  # memory_scale_target = 60
+  cpu_scale_target = 60
 
 
   tags = {
