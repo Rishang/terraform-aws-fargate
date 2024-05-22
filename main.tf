@@ -306,7 +306,7 @@ resource "aws_appautoscaling_scheduled_action" "scaling_schedule" {
   depends_on = [aws_appautoscaling_target.scaling]
   count      = length(var.scaling_schedule) != 0 && local.asg_target != 0 ? length(var.scaling_schedule) : 0
 
-  name               = "${var.service}-schedule-${count.index}"
+  name               = "${var.cluster}-${var.service}-cron-${count.index}"
   service_namespace  = aws_appautoscaling_target.scaling[0].service_namespace
   resource_id        = aws_appautoscaling_target.scaling[0].resource_id
   scalable_dimension = aws_appautoscaling_target.scaling[0].scalable_dimension
