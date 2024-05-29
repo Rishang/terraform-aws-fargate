@@ -109,10 +109,20 @@ module "fargate" {
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
   scale_min_capacity  = 2
-  fargate_spot        = true
 
-  # keep non spot capacity_provider too
-  force_spot = false
+  # keep 1 FARGATE for each 5 FARGATE_SPOT
+  capacity_provider_strategy = [
+    {
+      base              = 1
+      capacity_provider = "FARGATE"
+      weight            = 1
+    },
+    {
+      base              = 0
+      capacity_provider = "FARGATE_SPOT"
+      weight            = 5
+    }
+  ]
 
   # networking
   assign_public_ip = true
@@ -129,9 +139,9 @@ module "fargate" {
   point_to_r53 = true
 
   # autoscale
+  create_autoscale_target = true
   # memory_scale_target = 60
   cpu_scale_target = 60
-
 
   tags = {
     Name         = "whoami"

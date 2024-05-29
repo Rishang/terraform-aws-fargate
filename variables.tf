@@ -26,18 +26,6 @@ variable "service" {
   description = "Fargate service name"
 }
 
-variable "fargate_spot" {
-  type        = bool
-  description = "Whether to use fargate spot instances or not."
-  default     = false
-}
-
-variable "force_spot" {
-  type        = bool
-  description = "Set only fargate spot as Capacity provider."
-  default     = false
-}
-
 variable "assign_public_ip" {
   type        = bool
   description = "Auto assign public ip for ecs containers"
@@ -74,8 +62,30 @@ variable "deployment_maximum_percent" {
   default     = 200
 }
 
+variable "capacity_provider_strategy" {
+  type        = list(map(any))
+  description = "Capacity provider strategy for ecs service here `base` parameter defines the minimum number of tasks that should be launched using the specified capacity provider before considering the weight. `weight` parameter defines the relative percentage of tasks to be launched using the specified capacity provider after the base tasks have been satisfied."
+  default = [
+    {
+      base              = 1
+      capacity_provider = "FARGATE"
+      weight            = 1
+    },
+    {
+      base              = 0
+      capacity_provider = "FARGATE_SPOT"
+      weight            = 0
+    }
+  ]
+}
+
 # ----------------------- Fargate autoscale -------------------------------
 
+variable "create_autoscale_target" {
+  type        = bool
+  description = "Enable to create autoscale for ecs service"
+  default     = false
+}
 
 variable "scale_min_capacity" {
   type        = number

@@ -10,7 +10,7 @@ locals {
 
   # convert : demo.example.com to example.com
   root_domain = join(".", slice(split(".", var.subdomain), 1, length(split(".", var.subdomain))))
-  asg_target  = (var.cpu_scale_target > 0 || var.memory_scale_target > 0) ? 1 : 0
+  asg_target  = var.create_autoscale_target == true ? 1 : 0
 }
 
 # ------------------------ DATA ------------------------------
@@ -140,23 +140,14 @@ resource "aws_ecs_service" "fargate" {
   enable_ecs_managed_tags = var.enable_ecs_managed_tags
   # for stability a 1 dedicated fargate instance and rest spot
   # 1 dedicated per 5 spot
-  dynamic "capacity_provider_strategy" {
-    for_each = toset(var.fargate_spot == true && var.force_spot == false ? ["create"] : [])
-
-    content {
-      base              = 1
-      capacity_provider = "FARGATE"
-      weight            = 1
-    }
-  }
 
   dynamic "capacity_provider_strategy" {
-    for_each = toset(var.fargate_spot == true ? ["create"] : [])
+    for_each = var.capacity_provider_strategy
 
     content {
-      base              = var.fargate_spot == true && var.force_spot == true ? 1 : 0
-      capacity_provider = "FARGATE_SPOT"
-      weight            = 5
+      base              = capacity_provider_strategy.value["base"]
+      capacity_provider = capacity_provider_strategy.value["capacity_provider"]
+      weight            = capacity_provider_strategy.value["weight"]
     }
   }
 
@@ -233,7 +224,7 @@ resource "aws_appautoscaling_target" "scaling" {
 }
 
 resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
-  count = var.cpu_scale_target > 0 ? 1 : 0
+  count = (var.create_autoscale_target == true && var.cpu_scale_target > 0) ? 1 : 0
 
   name               = "ECSServiceAverageCPUUtilization:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
@@ -256,7 +247,7 @@ resource "aws_appautoscaling_policy" "cpu_scale_up_policy" {
 # memory base scale
 
 resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
-  count = var.memory_scale_target > 0 ? 1 : 0
+  count = (var.create_autoscale_target == true && var.memory_scale_target > 0) ? 1 : 0
 
   name               = "ECSServiceAverageMemoryUtilization:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"
@@ -278,8 +269,8 @@ resource "aws_appautoscaling_policy" "memory_scale_up_policy" {
 
 # alb based auto scaling 
 
-resource "aws_appautoscaling_policy" "scale_up_policy" {
-  count = var.lb_scale_target > 0 ? 1 : 0
+resource "aws_appautoscaling_policy" "traffic_scale_up_policy" {
+  count = (var.create_autoscale_target == true && var.lb_scale_target > 0) ? 1 : 0
 
   name               = "ALBRequestCountPerTarget:${aws_appautoscaling_target.scaling[count.index].resource_id}"
   policy_type        = "TargetTrackingScaling"

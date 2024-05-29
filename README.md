@@ -17,7 +17,7 @@
 
 module "fargate" {
   source  = "Rishang/fargate/aws"
-  version = "1.3.0"
+  version = "1.4.3"
 
   EnvironmentName = "test"
 
@@ -26,13 +26,22 @@ module "fargate" {
   service             = "whoami"
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
-  scale_min_capacity           = 3
+  scale_min_capacity  = 3
+  scale_max_capacity  = 10
   
-  fargate_spot        = true
-  
-  # default to true, only set force_spot to false
-  # if you want to use mixed on-demand and spot instances 
-  force_spot        = false
+  # keep 1 FARGATE for each 5 FARGATE_SPOT
+  capacity_provider_strategy = [
+    {
+      base              = 1
+      capacity_provider = "FARGATE"
+      weight            = 1
+    },
+    {
+      base              = 0
+      capacity_provider = "FARGATE_SPOT"
+      weight            = 5
+    }
+  ]
 
   # networking
   assign_public_ip = true
@@ -49,8 +58,25 @@ module "fargate" {
   point_to_r53 = true
 
   # autoscale (optional)
-  memory_scale_target = 60
-  # cpu_scale_target  = 60
+  create_autoscale_target = true
+  cpu_scale_target  = 60
+  # memory_scale_target = 60
+
+  # scheduled scaling (optional)
+  scaling_schedule = [
+    {
+      # Scale count to zero every night at 19:00
+      schedule     = "cron(0 19 * * ? *)"
+      min_capacity = 0
+      max_capacity = 0
+    },
+    {
+      # Scale count to 3 every morning at 7:00
+      schedule     = "cron(0 7 * * ? *)"
+      min_capacity = 3
+      max_capacity = 3
+    }
+  ]
 
   # service discovery (optional)
   enable_discovery = true
@@ -91,19 +117,27 @@ module "fargate" {
 # null are required inputs, 
 # others are optional default values
 
-EnvironmentName                    = null
-assign_public_ip                   = false
+EnvironmentName  = null
+assign_public_ip = false
+capacity_provider_strategy = [{
+  base              = "1"
+  capacity_provider = "FARGATE"
+  weight            = "1"
+  }, {
+  base              = "0"
+  capacity_provider = "FARGATE_SPOT"
+  weight            = "0"
+}]
 cluster                            = null
 container_name                     = ""
 container_port                     = -1
 cpu_scale_target                   = -1
+create_autoscale_target            = false
 deployment_maximum_percent         = 200
 deployment_minimum_healthy_percent = 100
 enable_discovery                   = false
 enable_ecs_managed_tags            = false
-fargate_spot                       = false
 force_new_deployment               = false
-force_spot                         = false
 health_check_interval              = 20
 health_check_matcher               = "200,202"
 health_check_path                  = "/"
@@ -138,16 +172,16 @@ vpc_id                             = ""
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | List of subnets for ecs service | `list(string)` | n/a | yes |
 | <a name="input_task_definition_arn"></a> [task\_definition\_arn](#input\_task\_definition\_arn) | The ARN of the task definition to use for the ECS service | `string` | n/a | yes |
 | <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | Auto assign public ip for ecs containers | `bool` | `false` | no |
+| <a name="input_capacity_provider_strategy"></a> [capacity\_provider\_strategy](#input\_capacity\_provider\_strategy) | Capacity provider strategy for ecs service here `base` parameter defines the minimum number of tasks that should be launched using the specified capacity provider before considering the weight. `weight` parameter defines the relative percentage of tasks to be launched using the specified capacity provider after the base tasks have been satisfied. | `list(map(any))` | <pre>[<br>  {<br>    "base": 1,<br>    "capacity_provider": "FARGATE",<br>    "weight": 1<br>  },<br>  {<br>    "base": 0,<br>    "capacity_provider": "FARGATE_SPOT",<br>    "weight": 0<br>  }<br>]</pre> | no |
 | <a name="input_container_name"></a> [container\_name](#input\_container\_name) | Required if service name is different than main application container\_name of task defination | `string` | `""` | no |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | container application port | `number` | `-1` | no |
 | <a name="input_cpu_scale_target"></a> [cpu\_scale\_target](#input\_cpu\_scale\_target) | Treshold cpu target value for autoscaling ecs service | `number` | `-1` | no |
+| <a name="input_create_autoscale_target"></a> [create\_autoscale\_target](#input\_create\_autoscale\_target) | Enable to create autoscale for ecs service | `bool` | `false` | no |
 | <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Deployment max healthy percent of container count | `number` | `200` | no |
 | <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Deployment min healthy percent of container count | `number` | `100` | no |
 | <a name="input_enable_discovery"></a> [enable\_discovery](#input\_enable\_discovery) | Enable service discovery, requires `namespace_id` and `container_name` | `bool` | `false` | no |
 | <a name="input_enable_ecs_managed_tags"></a> [enable\_ecs\_managed\_tags](#input\_enable\_ecs\_managed\_tags) | Specifies whether to enable Amazon ECS managed tags for the service. | `bool` | `false` | no |
-| <a name="input_fargate_spot"></a> [fargate\_spot](#input\_fargate\_spot) | Whether to use fargate spot instances or not. | `bool` | `false` | no |
 | <a name="input_force_new_deployment"></a> [force\_new\_deployment](#input\_force\_new\_deployment) | Enable to force a new task deployment of the service | `bool` | `false` | no |
-| <a name="input_force_spot"></a> [force\_spot](#input\_force\_spot) | Set only fargate spot as Capacity provider. | `bool` | `false` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | target group health check interval time in sec | `number` | `20` | no |
 | <a name="input_health_check_matcher"></a> [health\_check\_matcher](#input\_health\_check\_matcher) | Service health check response matcher | `string` | `"200,202"` | no |
 | <a name="input_health_check_path"></a> [health\_check\_path](#input\_health\_check\_path) | Health check path for ecs running containers | `string` | `"/"` | no |

@@ -134,8 +134,22 @@ module "fargate" {
   point_to_r53 = true
 
   # autoscale
-  memory_scale_target = 60
-  # cpu_scale_target    = 60
+  create_autoscale_target = true
+  # cpu_scale_target        = 60
+  scaling_schedule = [
+    {
+      # Scale count to zero every night at 19:00
+      schedule     = "cron(0 19 * * ? *)"
+      min_capacity = 0
+      max_capacity = 0
+    },
+    {
+      # Scale count to 3 every morning at 7:00
+      schedule     = "cron(0 7 * * ? *)"
+      min_capacity = 3
+      max_capacity = 3
+    }
+  ]
 
   # service discovery
   enable_discovery = true

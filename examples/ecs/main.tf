@@ -95,6 +95,7 @@ module "fargate" {
   container_port      = 80
   task_definition_arn = module.fargate_task_definition.arn
   scale_min_capacity  = 1
+  scale_max_capacity  = 5
 
   # networking
   assign_public_ip = true
