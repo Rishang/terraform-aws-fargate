@@ -13,6 +13,22 @@ locals {
   asg_target  = var.create_autoscale_target == true ? 1 : 0
 }
 
+# random suffix for the service name
+resource "random_string" "suffix" {
+  length  = 4
+  special = false
+  upper   = false
+
+  keepers = {
+    # Recreate the string if these values change,
+    # as they force replacement of the target group.
+    container_port = var.container_port
+    vpc_id         = var.vpc_id
+    service        = var.service
+    cluster        = var.cluster
+  }
+}
+
 # ------------------------ DATA ------------------------------
 
 data "aws_lb_listener" "https" {
@@ -33,7 +49,7 @@ resource "aws_lb_target_group" "lb_tg" {
     create_before_destroy = true
   }
 
-  name        = "${var.cluster}-${var.service}"
+  name        = "${var.cluster}-${var.service}-${random_string.suffix.result}"
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
